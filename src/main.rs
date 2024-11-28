@@ -1,25 +1,26 @@
-use std::{
-    io::{prelude::*, BufReader},
-    net::{TcpListener, TcpStream},
-};
+use std::fs;
+use markdown;
+use html_escape;
+
+use tiny_http::{Server, Response};
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let server = Server::http("127.0.0.1:7878").unwrap();
 
-    for stream in listener.incoming() {
-        let stream = stream.unwrap();
+    for request in server.incoming_requests() {
+        println!("received request! method: {:?}, url: {:?}, headers: {:?}",
+            request.method(),
+            request.url(),
+            request.headers()
+        );
 
-        handle_connection(stream);
+        let content = fs::read_to_string("dist/index.md").unwrap();
+        let html = markdown::to_html(&content);
+        //println!("{html}");
+        let mut html_decoded = String::new();
+        html_escape::decode_html_entities_to_string(html, &mut html_decoded);
+        let response = Response::from_data(html_decoded);
+        let _ = request.respond(response);
     }
-}
 
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&stream);
-    let http_request: Vec<_> = buf_reader
-        .lines()
-        .map(|result| result.unwrap())
-        .take_while(|line| !line.is_empty())
-        .collect();
-
-    println!("Request: {http_request:#?}");
 }

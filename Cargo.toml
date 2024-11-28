@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+html-escape = "0.2.13"
+markdown = "1.0.0-alpha.21"
+tiny_http = "0.12.0"
