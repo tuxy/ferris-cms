@@ -38,9 +38,13 @@ fn main() {
         // unsafe { from_utf8_unchecked(decode_html_entities_to_vec(text, output.as_mut_vec())) }
         // UP THERE is the unsafe version. We could use it like that, but lets see...
         html_escape::decode_html_entities_to_string(html, &mut html_decoded);
-        let response = Response::from_data(html_decoded);
 
-        // Why does this suck
-        let _ = request.respond(response);
+        // Adding extra styles code to the beginning, with <head> (Maybe possible for Adding titles as well????)
+        let mut html = String::from(format!("<head>\n<style>\n{}\n</style>\n</head>\n", fs::read_to_string("dist/styles.css").unwrap()));
+        html.push_str(&html_decoded);
+
+        let response = Response::from_data(html);
+
+        request.respond(response).unwrap();
     }
 }
