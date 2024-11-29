@@ -1,7 +1,6 @@
 use std::fs;
 use markdown;
 use html_escape;
-
 use tiny_http::{Server, Response};
 
 fn main() {
