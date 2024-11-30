@@ -7,7 +7,7 @@ use tiny_http::{Server, Response};
 
 #[derive(Deserialize)]
 struct Config {
-    bind_url: String,
+    bind_address: String,
     custom_css: String,
 }
 
@@ -17,7 +17,7 @@ fn main() {
     // TODO: Fix unwraps. Also wtf is the chain lmao
     let config: Config = toml::from_str(fs::read_to_string("config.toml").unwrap().as_str()).unwrap();
 
-    let server = Server::http(config.bind_url.as_str()).expect("Could not bind to address.");
+    let server = Server::http(config.bind_address.as_str()).expect("Could not bind to address.");
 
     for request in server.incoming_requests() {
 
