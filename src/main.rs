@@ -2,6 +2,7 @@ use std::fs;
 use markdown;
 use html_escape;
 use serde::Deserialize;
+use markdown::Options;
 
 use tiny_http::{Server, Response};
 
@@ -42,8 +43,11 @@ fn main() {
             Err(_) => fs::read_to_string("dist/404.md").expect("Error reading files. Is 404.md there?"),
         };
 
-        // Converts to html
-        let html = markdown::to_html(&content);
+        // Converts to html with options
+
+        let gfm = Options::gfm(); // Default GitHub flavoured markdown settings
+
+        let html = markdown::to_html_with_options(&content, &gfm).unwrap();
         let mut html_decoded = String::new();
 
         // Uses a LIBRARY to remove html escapes. PLS change it sucks
