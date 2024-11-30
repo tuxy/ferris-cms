@@ -1,4 +1,4 @@
-use std::{fs, string};
+use std::fs;
 use markdown;
 use html_escape;
 use serde::Deserialize;
