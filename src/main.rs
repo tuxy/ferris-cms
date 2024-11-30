@@ -1,22 +1,32 @@
 use std::fs;
-use markdown;
-use html_escape;
 use serde::Deserialize;
-use markdown::Options;
 
 use tiny_http::{Server, Response};
+
+mod parse;
 
 #[derive(Deserialize)]
 struct Config {
     bind_address: String,
     custom_css: String,
+    bar: Bar,
+}
+
+#[derive(Deserialize)]
+#[derive(Debug)]
+struct Bar {
+    names: Vec<String>,
+    urls: Vec<String>,
 }
 
 fn main() {
 
     // Opens config.toml from root
     // TODO: Fix unwraps. Also wtf is the chain lmao
-    let config: Config = toml::from_str(fs::read_to_string("config.toml").unwrap().as_str()).unwrap();
+    let config: Config = toml::from_str(
+        fs::read_to_string("config.toml").unwrap().as_str()
+    ).unwrap();
+    println!("{:?}", config.bar);
 
     let server = Server::http(config.bind_address.as_str()).expect("Could not bind to address.");
 
@@ -43,22 +53,7 @@ fn main() {
             Err(_) => fs::read_to_string("dist/404.md").expect("Error reading files. Is 404.md there?"),
         };
 
-        // Converts to html with options
-
-        let gfm = Options::gfm(); // Default GitHub flavoured markdown settings
-
-        let html = markdown::to_html_with_options(&content, &gfm).unwrap();
-        let mut html_decoded = String::new();
-
-        // Uses a LIBRARY to remove html escapes. PLS change it sucks
-        // unsafe { from_utf8_unchecked(decode_html_entities_to_vec(text, output.as_mut_vec())) }
-        // UP THERE is the unsafe version. We could use it like that, but lets see...
-        html_escape::decode_html_entities_to_string(html, &mut html_decoded);
-
-        // Adding extra styles code to the beginning, with <head> (Maybe possible for Adding titles as well????)
-        // Something like new.css or simple.css would be amazing here
-        let mut html = String::from(format!("<head>{}<head>", config.custom_css.clone().as_str()));
-        html.push_str(&html_decoded);
+        let html = parse::parse(&content, request.url(), &config.custom_css);
 
         let response = Response::from_data(html);
 
