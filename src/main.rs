@@ -1,11 +1,21 @@
-use std::fs;
+use std::{fs, string};
 use markdown;
 use html_escape;
+use serde::Deserialize;
 
 use tiny_http::{Server, Response};
 
+#[derive(Deserialize)]
+struct Config {
+   custom_css: String,
+}
+
 fn main() {
     let server = Server::http("127.0.0.1:7878").expect("Could not bind to address.");
+
+    // Opens config.toml from root
+    // TODO: Fix unwraps. Also wtf is the chain lmao
+    let config: Config = toml::from_str(fs::read_to_string("config.toml").unwrap().as_str()).unwrap();
 
     for request in server.incoming_requests() {
 
@@ -40,7 +50,8 @@ fn main() {
         html_escape::decode_html_entities_to_string(html, &mut html_decoded);
 
         // Adding extra styles code to the beginning, with <head> (Maybe possible for Adding titles as well????)
-        let mut html = String::from(format!("<head>\n<style>\n{}\n</style>\n</head>\n", fs::read_to_string("dist/styles.css").unwrap()));
+        // Something like new.css or simple.css would be amazing here
+        let mut html = String::from(format!("<head>{}<head>", config.custom_css.clone().as_str()));
         html.push_str(&html_decoded);
 
         let response = Response::from_data(html);
