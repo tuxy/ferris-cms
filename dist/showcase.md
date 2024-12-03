@@ -1,3 +1,4 @@
+
 **NOTE: This is taken from the Joplin markdown cheatsheet [here](https://github.com/laurent22/joplin/blob/dev/readme/apps/markdown.md)**
 
 # Markdown Guide

@@ -11,10 +11,11 @@ pub fn parse(content: &str, url: &str, css: &str) -> String {
     // Not a great or efficient way to fix escape
     html_escape::decode_html_entities_to_string(html, &mut html_decoded);
 
+    // Main parser
     let mut html = String::from(
         format!(
             "<head><link rel='preload' href='{}' as='style'/><link rel='stylesheet' href='{}'><title>{}</title><head>"
-            ,css, css, url) // Loads into a css url (Could be a file), preloads it and also adds simple titles
+            , css, css, url) // Loads into a css url (Could be a file), preloads it and also adds simple titles
     );
     html.push_str(&html_decoded);
 
