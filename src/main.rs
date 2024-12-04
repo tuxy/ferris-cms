@@ -1,15 +1,22 @@
 use std::fs;
-use markdown;
-use html_escape;
 use serde::Deserialize;
-use markdown::Options;
 
 use tiny_http::{Server, Response};
+
+mod parse;
 
 #[derive(Deserialize)]
 struct Config {
     bind_address: String,
     custom_css: String,
+    bar: Option<Bar>,
+}
+
+#[derive(Deserialize)]
+#[derive(Clone)]
+struct Bar {
+    names: Vec<String>,
+    urls: Vec<String>,
 }
 
 fn main() {
@@ -47,12 +54,29 @@ fn main() {
             directory
         };
 
+        let mut bar_contents = String::new();
+        // Checks if bar table? in the config is populated.
+        match config.bar {
+            Some(ref val) => {
+                let item_names = &val.names;
+                let item_url = &val.urls;
+                for (idx, i) in item_names.iter().enumerate() {
+                    bar_contents.push_str(
+                        format!("/ [{}]({}) ", i, item_url[idx]).as_str()
+                    );
+                }
+            },
+            None => (),
+        }
+        bar_contents.push_str("\n");
+
         // If page not found. TODO add reason
         let content = match fs::read_to_string(filename) {
             Ok(val) => val,
             Err(_) => fs::read_to_string("dist/404.md").expect("Error reading 404.md. Is 404.md there?"),
         };
 
+        bar_contents.push_str(&content.as_str());
         // Converts to html with options
 
         let gfm = Options::gfm(); // Default GitHub flavoured markdown settings
@@ -70,10 +94,7 @@ fn main() {
         // UP THERE is the unsafe version. We could use it like that, but lets see...
         html_escape::decode_html_entities_to_string(html, &mut html_decoded);
 
-        // Adding extra styles code to the beginning, with <head> (Maybe possible for Adding titles as well????)
-        // Something like new.css or simple.css would be amazing here
-        let mut html = String::from(format!("<head>{}<head>", config.custom_css.clone().as_str()));
-        html.push_str(&html_decoded);
+        let html = parse::parse(&bar_contents, request.url(), &config.custom_css);
 
         let response = Response::from_data(html);
 
