@@ -1,3 +1,5 @@
+![](example.gif)
+
 # Ferris CMS
 
 A simple, high(hopefully)-performant CMS that uses plain Markdown files
@@ -11,6 +13,7 @@ While other CMS's have their benefits, Ferris can run under very simple specific
 ## Features
 - Instant updates to file structure and access
 - Simple and easy formatting, which supports GFM (For tables, maths, etc...)
+- A top bar for navigation across pages
 
 ## TODO
 - Change ending from a folder to a .md or .html
