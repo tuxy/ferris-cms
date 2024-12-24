@@ -11,6 +11,8 @@ fn main() {
 
     let server = Server::http(config.bind_address.as_str())
         .expect("Could not bind to address.");
+    
+    println!("Bind address: {}", config.bind_address);
 
     for request in server.incoming_requests() {
 
