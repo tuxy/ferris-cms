@@ -1,31 +1,15 @@
-use tiny_http::{Server, Response};
+use axum::{Router, routing::get};
+use tokio::net::TcpListener;
 
 mod parse;
-mod config;
-mod bar;
+mod pages;
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    let app = Router::new()
+        .route("/{path}", get(pages::adaptive_page));
 
-    // Opens config.toml from root
-    let config: config::Config = config::open_config();
-
-    let server = Server::http(config.bind_address.as_str())
-        .expect("Could not bind to address.");
-    
-    println!("Bind address: {}", config.bind_address);
-
-    for request in server.incoming_requests() {
-
-        let content= bar::custom_markdown(&request, &config);
-        // Converts to html with options
-
-        let html = parse::parse(&content, request.url(), &config.custom_css);
-
-        let response = Response::from_data(html);
-
-        match request.respond(response) {
-            Ok(_) => (),
-            Err(_) => panic!("Could not respond to request")
-        };
-    }
+    let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+    println!("Listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
 }
